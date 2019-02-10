@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<script type="text/javascript" src="js/jquery-2.1.4.min.js"></script>
+	<script type="text/javascript" src="../jslibs/dependancy.js"></script>
+	<script type="text/javascript" src="../jslibs/extend.js"></script>	
+	<script type="text/javascript" src="js/level.js"></script>
+	<script type="text/javascript" src="js/leveleditor.js"></script>
+	<style type="text/css">
+	canvas { 
+        -moz-user-select: none; 
+        -khtml-user-select: none; 
+        -webkit-user-select: none; 
+        -o-user-select: none; 
+	} 
+	</style>
+</head>
+<body>
+	<select id="level-select" multiple>
+
+	</select>
+	<div>
+		<input type="button" id="new" value="New"/>
+		<input type="button" id="delete" value="Delete"/>
+		<input type="button" id="save" value="Save Levels"/>
+	</div>
+
+	<canvas id="edit-canvas" oncontextmenu="return false">
+
+	</canvas>
+	<div>
+		Tile: 
+		<select id="tile-select">
+			<option value="0" selected>0</option>
+			<option value="10">10</option>
+		</select>
+
+	</div>
+</body>
+</html>

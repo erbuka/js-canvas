@@ -1,0 +1,358 @@
+<html>
+<head>
+	<title></title>
+	<script type="text/javascript" src="js/resload.js"></script>
+	<script type="text/javascript" src="js/sound.js"></script>
+	<script type="text/javascript" src="js/vecmath2d.js"></script>
+	<script type="text/javascript" src="js/geom.js"></script>
+	<script type="text/javascript" src="js/asteroids.js"></script>
+	<script type="text/javascript">
+
+		var ratio = 1.5986492111446794226250419603894;
+
+
+		var requestAnimationFrame =
+			window.requestAnimationFrame ||
+			window.webkitRequestAnimationFrame ||
+			window.mozRequestAnimationFrame ||
+			window.oRequestAnimationFrame;
+
+		var canvas, ctx,
+			ship, shipExplosion,
+			life, scale;
+
+		var deathFrame = 0;
+
+		var thrustChannel = null;
+
+		window.addEventListener("load", function() {
+			canvas = document.createElement("canvas");
+
+			scale = window.innerHeight / Constants.Height;
+
+			// Constants.Height = window.innerHeight;
+			Constants.Width = Constants.Height / window.innerHeight * window.innerWidth;
+			//Constants.Width = window.innerHeight * ratio;
+
+			canvas.height = window.innerHeight;
+			canvas.width = window.innerWidth;
+
+			ctx = canvas.getContext("2d");
+
+			document.body.appendChild(canvas);
+
+			init();
+			loop();
+		});
+
+		var newLevel = function() {
+			Missile.init();
+			Asteroid.init(2 + GameState.currentLevel);
+			ship.init();
+
+			GameState.currentState = GameState.PLAYING;		
+		}
+
+		var init = function() {
+
+			// TouchState.configure(canvas);
+
+			Asteroid.init(20);
+			
+			life = new Polygon(p_ship);
+			life.center().scale(0.5).update();
+
+			ship = new Ship();
+			ship.init();
+		}
+
+		var update = function() {
+
+			if(GameState.currentState == GameState.LOADING) {
+				if(resourceLoader.isDone()) 
+					GameState.currentState = GameState.SPLASH;
+			} else if(GameState.currentState == GameState.SPLASH) {
+				if(KeyState[KeyState.ENTER]) {
+				//if(KeyState[KeyState.ENTER] || TouchState.isDown()) {
+					GameState.init();
+					newLevel();
+					Music.start();
+				}
+
+				for(var i in Asteroid.objects) {
+					Asteroid.objects[i].update();
+				}
+
+			} else if(GameState.currentState == GameState.PLAYING) {
+
+				if(Asteroid.count == 0) { // new level
+					GameState.currentLevel++;
+					newLevel();
+					Music.start();			
+				}
+
+				if(KeyState[KeyState.LEFT]) {
+					ship.rotate(-Constants.ShipRotationVelocity);
+				} else if(KeyState[KeyState.RIGHT]) {
+					ship.rotate(Constants.ShipRotationVelocity);
+				}
+
+				if(KeyState[KeyState.UP]) {
+					var a = Vector2D.getDirection(ship._angle - Math.PI / 2);
+					ship.addVelocity(a.scale(Constants.ShipAcceleration));
+					/*if(!thrustChannel) {
+						thrustChannel = soundEngine.play(ResID.fx_thrust);
+						soundEngine.getChannel(thrustChannel).loop = true;
+					}*/					
+				} else {
+					/*if(thrustChannel) {
+						soundEngine.stop(thrustChannel);
+						thrustChannel = null;
+					}*/
+				}
+
+				/*
+				if(TouchState.isMoving()) {
+					var d = TouchState.getMovingDirection();
+					ship.addVelocity(d.scale(Constants.ShipAcceleration));
+					ship.setRotation(Vector2D.getAngle(d) + Math.PI / 2);
+				}
+
+				if(TouchState.isFiring())
+					ship.fire();
+				*/
+
+				if(KeyState[KeyState.SPACE])
+					ship.fire();
+
+				ship.update();
+
+				for(var i in Missile.objects)
+					Missile.objects[i].update();
+
+				for(var i in Asteroid.objects) {
+					var o = Asteroid.objects[i];
+					o.update();
+					if(!ship.isInvincible() && o.intersects(ship)) {
+
+						shipExplosion = new ShipExplosion(ship);
+						console.log(shipExplosion);
+						deathFrame = 0;
+						
+						if(GameState.lives > 0) {
+							GameState.lives--;
+							GameState.currentState = GameState.DEATH;
+						} else {
+							GameState.hs();
+							GameState.currentState = GameState.GAMEOVER;
+						}
+						
+						Music.stop();
+    					soundEngine.play(ResID.fx_bang);
+
+					}
+
+
+					for(var j in Missile.objects) {
+						var m = Missile.objects[j];
+						if(o.contains(m.getPosition())) {							
+							o.kill();
+							m.kill();
+						}
+					}
+				}
+
+			} else if(GameState.currentState == GameState.DEATH || GameState.currentState == GameState.GAMEOVER) {
+
+				if(deathFrame > 180) {
+					if(GameState.currentState == GameState.GAMEOVER) {
+						Asteroid.init(10);
+						GameState.currentState = GameState.SPLASH;
+					} else {
+						ship.init();
+						GameState.currentState = GameState.PLAYING;
+						Music.start();
+					}
+				}
+
+				shipExplosion.update();
+
+				for(var i in Asteroid.objects)
+					Asteroid.objects[i].update();
+
+				Missile.init();
+
+				deathFrame++;
+
+			}
+		}
+
+		var renderScore = function () {
+			var score = parseInt(GameState.score) + "";
+
+			ctx.save();
+			
+			ctx.font = "20px hyperspace";
+			ctx.fillStyle = "#fff";
+			ctx.translate(10, 30);
+			ctx.fillText(score, 0, 0);
+			ctx.translate(-life.getBoundingBox().x1, 30);
+			for(var i = 0; i < GameState.lives; i++) {
+				life.stroke(ctx);
+				ctx.translate(life.getBoundingBox().getWidth() * 1.5, 0);
+			}
+
+			ctx.restore();
+		}
+
+		var renderAsteroids = function() {
+
+			ctx.strokeStyle = "#fff";
+
+			for(var i in Asteroid.objects)  {
+				var o = Asteroid.objects[i];
+				var bb = o.getBoundingBox();
+
+				o.stroke(ctx);
+
+				if(bb.x1 < 0) {
+					ctx.save();
+					ctx.translate(Constants.Width, 0);
+					o.stroke(ctx);
+					ctx.restore();
+				} else if(bb.x2 > Constants.Width) {
+					ctx.save();
+					ctx.translate(-Constants.Width, 0);
+					o.stroke(ctx);
+					ctx.restore();
+				}
+
+				if(bb.y1 < 0) {
+					ctx.save();
+					ctx.translate(0, Constants.Height);
+					o.stroke(ctx);
+					ctx.restore();
+				} else if(bb.y2 > Constants.Height) {
+					ctx.save();
+					ctx.translate(0, -Constants.Height);
+					o.stroke(ctx);
+					ctx.restore();
+				}
+			}			
+		}
+
+		/*
+		var renderControls = function() {
+			ctx.strokeStyle = "#fff";
+
+			ctx.beginPath();
+			ctx.arc(TouchState.ButtonRadius, Constants.Height - TouchState.ButtonRadius, TouchState.ButtonRadius, 0, Math.PI * 2);
+			ctx.stroke();
+
+			ctx.beginPath();
+			ctx.arc(Constants.Width - TouchState.ButtonRadius, Constants.Height - TouchState.ButtonRadius, 
+				TouchState.ButtonRadius, 0, Math.PI * 2);
+			ctx.stroke();			
+		}
+		*/
+
+		var render = function() {
+			ctx.fillStyle = "#000";
+			
+			ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+			ctx.save();
+			ctx.scale(scale, scale);
+			
+			if(GameState.currentState == GameState.LOADING) {
+
+				ctx.fillStyle = "#fff";
+				ctx.font = "32px hyperspace";
+				ctx.fillText(Constants.Loading, (Constants.Width - ctx.measureText(Constants.Loading).width) / 2, Constants.Height / 4);
+
+			} else if(GameState.currentState == GameState.SPLASH) {
+
+				var hs = Constants.HighScore + parseInt(GameState.highScore);
+
+				renderAsteroids();
+
+				ctx.fillStyle = "#fff";
+
+				ctx.font = "68px hyperspace";
+
+				ctx.fillText(Constants.Title, (Constants.Width - ctx.measureText(Constants.Title).width) / 2, Constants.Height / 4);
+				
+				ctx.font = "32px hyperspace";
+				
+				ctx.fillText(hs, (Constants.Width - ctx.measureText(hs).width) / 2, Constants.Height / 2);
+
+				if(Timers.startBlink)
+					ctx.fillText(Constants.Start, (Constants.Width - ctx.measureText(Constants.Start).width) / 2, Constants.Height * 3 / 4);	
+
+
+			} else if(GameState.currentState == GameState.PLAYING) {
+
+				ctx.strokeStyle = "#fff";
+				ctx.fillStyle = "#fff";
+
+
+				if(ship.isInvincible()) {
+					if(Timers.invincibleBlink) 
+						ship.stroke(ctx);
+				} else {
+					ship.stroke(ctx);
+				}
+
+				for(var i in Missile.objects) 
+					Missile.objects[i].fill(ctx);
+
+				renderAsteroids();		
+
+				renderScore();
+
+				// renderControls();
+
+
+
+			} else if(GameState.currentState == GameState.DEATH || GameState.currentState == GameState.GAMEOVER) {
+
+				if(GameState.currentState == GameState.GAMEOVER && deathFrame > 60) {
+					ctx.fillStyle = "#fff";
+					ctx.font = "68px hyperspace";
+					ctx.fillText(
+						Constants.GameOver, 
+						(Constants.Width - ctx.measureText(Constants.GameOver).width) / 2,
+						Constants.Height / 4
+					);				
+				}
+
+				ctx.strokeStyle = "#fff";
+
+				shipExplosion.stroke(ctx);
+
+				renderAsteroids();
+
+				renderScore();
+
+			}
+
+
+			ctx.restore();
+		}
+
+		var loop = function() {
+			update();
+			render();
+			requestAnimationFrame(loop, canvas);
+		}	
+	</script>
+	<style type="text/css">
+		@font-face {
+			font-family: hyperspace;
+			src: url(hyperspace.woff);
+		}
+	</style>
+</head>
+<body style="margin: 0; padding: 0;">
+</body>
+</html>

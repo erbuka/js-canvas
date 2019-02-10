@@ -1,0 +1,44 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Super Mario JS - A little HTML5 game sample</title>
+<script type="text/javascript" language="javascript" src="js/resload.js"></script>
+<script type="text/javascript" language="javascript" src="js/sound.js"></script>
+<script type="text/javascript" language="javascript" src="js/mario.js"></script>
+<script type="text/javascript" language="javascript" src="js/level1.js"></script>
+<style type="text/css">
+	body {
+		margin: 0;
+		padding: 0;
+	}
+</style>
+</head>
+<body>
+	<script language="javascript" type="text/javascript">
+
+		window.addEventListener("load", function() {
+
+			var ratio = 1.5986492111446794226250419603894;
+
+			var canvas  = document.createElement("canvas");
+
+			canvas.height = window.innerHeight
+			canvas.width = window.innerWidth;
+			//canvas.width = window.innerHeight * ratio;
+
+			document.body.appendChild(canvas);
+
+			var engine = new Engine(canvas);
+
+			loop = function() {
+				engine.update();
+				engine.render();
+				window.requestAnimationFrame(loop);
+			}
+			
+			loop();
+		});
+	</script>
+</body>
+</html>

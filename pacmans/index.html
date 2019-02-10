@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<link rel="stylesheet" type="text/css" href="https://www.w3schools.com/w3css/4/w3.css"/>
+	<link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-deep-orange.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script language="javascript" src="util.js"></script>
+	<script language="javascript" src="nn.js"></script>
+	<script language="javascript" src="app.js"></script>
+	<style>
+		body, html {
+			margin: 0;
+			padding : 0;
+		}
+
+		canvas {
+			display: block;
+		}
+
+		.slider-container
+		{
+			height: 8px;
+			position: relative;
+		}
+
+		.slider-bar
+		{
+			height: 100%;
+			position: absolute;
+			left: 0;
+			top: 0;
+		}
+
+	</style>
+</head>
+<body>
+	<template id="slider-template">
+		<div s-min="10" s-max="20" s-step="1" s-val="15" s-text="Prova">
+			<div class="slider-container w3-light-gray" >
+				<div class="slider-bar w3-theme"></div>
+				<input type="hidden"/>
+			</div>	
+			<div id="label"></div>
+
+			<script language="javascript">	
+				(function() { 	
+					var scriptTag = document.scripts[document.scripts.length - 1];
+					var parent = $(scriptTag.parentNode);
+					var container = parent.find(".slider-container");
+					var bar = container.find(".slider-bar");
+					var input = container.find("input");
+					var label = parent.find("div#label");
+
+					var min = parseFloat(parent.attr("s-min"));
+					var max = parseFloat(parent.attr("s-max"));
+					var step = parseFloat(parent.attr("s-step"));
+					var text = parent.attr("s-text");
+					var id = parent.attr("s-id");
+
+					var updateUI = function()
+					{
+						var val = parseFloat(input.val());
+						var percent = (val - min) / (max - min) * 100;
+						bar.css("width", percent + "%");
+						label.html(text + ": " + val);
+					}
+
+					parent.on("mousemove mousedown", function(e) {
+						if(e.buttons == 1)
+						{
+							var ratio = e.offsetX / container.width();
+							var v = min + (max - min) * ratio;
+							var m = v % step;
+							var newVal = (v - m) + (m / step > 0.5 ? step : 0);
+							input.val(newVal);
+							updateUI();
+						}
+					});
+
+					input.attr("id", id);
+					input.val(parent.attr("s-val"));
+
+					updateUI();
+				})();
+			</script>	
+
+		</div>
+	</template>
+
+	<div id="intro" class="w3-modal">
+	  <div class="w3-modal-content w3-animate-top w3-container">
+	  	<h3 class="w3-text-theme">A Pacman's Life</h3>
+	  	<p>
+	  		It's very hard to be Pacman...
+	  	<p>
+
+	  	<p>
+	  		You have a very small brain which doesn't seem to work very well.
+	  		You see some food close the the left, but you turn right. And those ghosts
+	  		hunting you all the time... so annoying...
+	  	</p>
+	  	<p>
+	  		You'll probably find your death in one way or another, but, you know, not everything
+	  		is lost... The next generations of Pacmans will learn from your mistakes, 
+	  		get better at finding food and escape those nasty ghosts.
+	  	</p>
+
+	  	<p>
+	  		This is "A Pacman's life", a simulation of evolving neural networks.
+	  	</p>
+	  	<p class="w3-right">
+	  		<button id="next" class="w3-button">Next</button>
+	  	</p>
+	  </div>
+	</div>
+
+	<div id="new-simulation" class="w3-modal">
+	  <div class="w3-modal-content w3-animate-top w3-container">
+  		<button id="close" class="w3-button w3-display-topright">&times;</button>
+	  	<h3 class="w3-text-theme">New Simulation</h3>
+	  	<p>
+	  		This are the parameters that rule the world. Keep the preset
+	  		or feel free to try your own.
+	  	</p>
+	  	<div id="params">
+
+	  	</div>
+	  	<p class="w3-right">
+	  		<button id="start" class="w3-button">Start</button>
+	  	</p>
+	  </div>
+	</div>
+
+	<div class="w3-display-topleft w3-margin">
+		<button class="w3-button w3-theme" onclick="UI.newSimulation()">New Simulation</button>
+	</div>
+
+</body>
+</html>

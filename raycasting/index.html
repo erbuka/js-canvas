@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+
+<head>
+	<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet"/>
+	<link href="styles.css" rel="stylesheet" />
+	<script type="text/javascript" src="js/extend.js"></script>
+
+	<script type="text/javascript" src="js/v3d.js"></script>
+	<script type="text/javascript" src="js/shapes.js"></script>
+	<script type="text/javascript" src="js/raycaster.js"></script>
+
+	<script type="text/javascript" src="js/main.js"></script>
+
+	<title>Raycasting</title>
+
+
+</head>
+
+<body>
+	<canvas id="canvas" width="160" height="120">
+	</canvas>
+	<div id="help" style="visibility: visible">
+		This example renders a very simple 3D scene of boxes and spheres
+		using a <strong>Raycasting</strong> algorithm, which can be used as base for a <strong>Raytracing</strong>.<br><br>
+		This algorithm requires a lot of computational power, so it's almost impossibile to have a real-time
+		implementation in Javascript. Anyway it can be done using more powerful tools, like C++/CUDA C.<br><br>
+		This demo shows how to get started with Raytracing with shadows and lights support.<br>
+		- Use the ARROW KEYS to move around<br>
+		- Press S to turn shadows on/off<br>
+		- Press L to turn light on/off<br>
+		- Press H to hide/show this frame<br>
+	</div>
+</body>
+
+</html>
