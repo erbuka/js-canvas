@@ -608,7 +608,6 @@ ShipExplosion.prototype.stroke = function(ctx) {
         ctx.moveTo(this.edges[i][0].x, this.edges[i][0].y);
         ctx.lineTo(this.edges[i][1].x, this.edges[i][1].y);
         ctx.stroke();
-        console.log(this.edges);
     }
 }
 
