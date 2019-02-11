@@ -1,0 +1,21 @@
+{
+  "name": "js-canvas",
+  "version": "1.0.0",
+  "description": "My collection of Javascript/Canvas applications and games.",
+  "scripts": {
+    "start" : "node ./web-server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/erbuka/js-canvas.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/erbuka/js-canvas/issues"
+  },
+  "homepage": "https://github.com/erbuka/js-canvas#readme",
+  "dependencies": {
+    "express": "^4.16.4"
+  }
+}
